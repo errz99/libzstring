@@ -18,14 +18,14 @@ const zstring_error_t = enum(c_int) {
 };
 
 export fn zstring_init() ?*zstring_t {
-    var str = allocator.create(String) catch return null;
+    const str = allocator.create(String) catch return null;
     str.* = String.init(allocator);
-    return @ptrCast(*zstring_t, str);
+    return @as(*zstring_t, @ptrCast(str));
 }
 
 export fn zstring_init_with_contents(contents: ?[*:0]const u8, out_err: ?*zstring_error_t) ?*zstring_t {
     if (contents == null or out_err == null) return null;
-    var str = allocator.create(String) catch return null;
+    const str = allocator.create(String) catch return null;
     str.* = String.init_with_contents(allocator, std.mem.span(contents.?)) catch |err| {
         switch (err) {
             String.Error.OutOfMemory => {
@@ -45,7 +45,7 @@ export fn zstring_init_with_contents(contents: ?[*:0]const u8, out_err: ?*zstrin
     if (out_err) |e| {
         e.* = .ZSTRING_ERROR_NONE;
     }
-    return @ptrCast(*zstring_t, str);
+    return @as(*zstring_t, @ptrCast(str));
 }
 
 export fn zstring_deinit(self: ?*zstring_t) void {
@@ -125,7 +125,7 @@ export fn zstring_insert(self: ?*zstring_t, literal: ?[*:0]const u8, index: usiz
 }
 
 export fn zstring_pop(self: ?*zstring_t, len: ?*usize) ?[*]const u8 {
-    var pop = zstringCast(self.?).pop() orelse return null;
+    const pop = zstringCast(self.?).pop() orelse return null;
     if (len) |ln| {
         ln.* = pop.len;
     }
@@ -138,7 +138,7 @@ export fn zstring_cmp(self: ?*const zstring_t, literal: ?[*:0]const u8) c_int {
 }
 
 export fn zstring_str(self: ?*const zstring_t, len: ?*usize) ?[*]const u8 {
-    var str = zstringCast(@constCast(self.?)).str();
+    const str = zstringCast(@constCast(self.?)).str();
     if (len) |ln| {
         ln.* = str.len;
     }
@@ -147,7 +147,7 @@ export fn zstring_str(self: ?*const zstring_t, len: ?*usize) ?[*]const u8 {
 
 // NOTE: must be freed
 export fn zstring_to_owned(self: ?*const zstring_t, out_err: ?*zstring_error_t, len: ?*usize) ?[*]u8 {
-    var to_owned = zstringCast(@constCast(self.?)).toOwned() catch |err| {
+    const to_owned = zstringCast(@constCast(self.?)).toOwned() catch |err| {
         switch (err) {
             String.Error.OutOfMemory => {
                 if (out_err) |e| {
@@ -173,7 +173,7 @@ export fn zstring_to_owned(self: ?*const zstring_t, out_err: ?*zstring_error_t, 
 }
 
 export fn zstring_char_at(self: ?*const zstring_t, index: usize, len: ?*usize) ?[*]const u8 {
-    var char_at = zstringCast(@constCast(self.?)).charAt(index) orelse return null;
+    const char_at = zstringCast(@constCast(self.?)).charAt(index) orelse return null;
     if (len) |ln| {
         ln.* = char_at.len;
     }
@@ -229,7 +229,7 @@ export fn zstring_trim(self: ?*zstring_t, whitelist: ?[*:0]const u8) void {
 }
 
 export fn zstring_clone(self: ?*const zstring_t, out_err: ?*zstring_error_t) ?*zstring_t {
-    var clone = zstringCast(@constCast(self.?)).clone() catch |err| {
+    const clone = zstringCast(@constCast(self.?)).clone() catch |err| {
         switch (err) {
             String.Error.OutOfMemory => {
                 if (out_err) |e| {
@@ -245,12 +245,12 @@ export fn zstring_clone(self: ?*const zstring_t, out_err: ?*zstring_error_t) ?*z
             },
         }
     };
-    var str = allocator.create(String) catch return null;
+    const str = allocator.create(String) catch return null;
     str.* = clone;
     if (out_err) |e| {
         e.* = .ZSTRING_ERROR_NONE;
     }
-    return @ptrCast(*zstring_t, str);
+    return @as(*zstring_t, @ptrCast(str));
 }
 
 export fn zstring_reverse(self: ?*zstring_t) void {
@@ -277,7 +277,7 @@ export fn zstring_is_empty(self: ?*const zstring_t) c_int {
 }
 
 export fn zstring_split(self: ?*const zstring_t, delimiters: ?[*:0]const u8, index: usize, len: ?*usize) ?[*]const u8 {
-    var split = zstringCast(@constCast(self.?)).split(std.mem.span(delimiters.?), index) orelse return null;
+    const split = zstringCast(@constCast(self.?)).split(std.mem.span(delimiters.?), index) orelse return null;
     if (len) |ln| {
         ln.* = split.len;
     }
@@ -285,7 +285,7 @@ export fn zstring_split(self: ?*const zstring_t, delimiters: ?[*:0]const u8, ind
 }
 
 export fn zstring_split_to_zstring(self: ?*const zstring_t, delimiters: ?[*:0]const u8, index: usize, out_err: ?*zstring_error_t) ?*zstring_t {
-    var clone = zstringCast(@constCast(self.?)).splitToString(std.mem.span(delimiters.?), index) catch |err| {
+    const clone = zstringCast(@constCast(self.?)).splitToString(std.mem.span(delimiters.?), index) catch |err| {
         switch (err) {
             String.Error.OutOfMemory => {
                 if (out_err) |e| {
@@ -301,12 +301,12 @@ export fn zstring_split_to_zstring(self: ?*const zstring_t, delimiters: ?[*:0]co
             },
         }
     } orelse return null;
-    var str = allocator.create(String) catch return null;
+    const str = allocator.create(String) catch return null;
     str.* = clone;
     if (out_err) |e| {
         e.* = .ZSTRING_ERROR_NONE;
     }
-    return @ptrCast(*zstring_t, str);
+    return @as(*zstring_t, @ptrCast(str));
 }
 
 export fn zstring_clear(self: ?*zstring_t) void {
@@ -322,7 +322,7 @@ export fn zstring_to_uppercase(self: ?*zstring_t) void {
 }
 
 export fn zstring_substr(self: ?*const zstring_t, start: usize, end: usize, out_err: ?*zstring_error_t) ?*zstring_t {
-    var substr = zstringCast(@constCast(self.?)).substr(start, end) catch |err| {
+    const substr = zstringCast(@constCast(self.?)).substr(start, end) catch |err| {
         switch (err) {
             String.Error.OutOfMemory => {
                 if (out_err) |e| {
@@ -338,18 +338,18 @@ export fn zstring_substr(self: ?*const zstring_t, start: usize, end: usize, out_
             },
         }
     };
-    var str = allocator.create(String) catch return null;
+    const str = allocator.create(String) catch return null;
     str.* = substr;
     if (out_err) |e| {
         e.* = .ZSTRING_ERROR_NONE;
     }
-    return @ptrCast(*zstring_t, str);
+    return @as(*zstring_t, @ptrCast(str));
 }
 
 export fn zstring_iterator_next(it: ?*zstring_iterator_t, len: ?*usize) ?[*]const u8 {
     if (zstringCast(@constCast(it.?.*.zstring.?)).buffer) |buffer| {
         if (it.?.*.index == zstringCast(@constCast(it.?.*.zstring.?)).size) return null;
-        var i = it.?.*.index;
+        const i = it.?.*.index;
         it.?.*.index += std.unicode.utf8ByteSequenceLength(buffer[i]) catch 1;
         const buf = buffer[i..it.?.*.index];
         if (len) |ln| {
@@ -366,13 +366,14 @@ export fn zstring_iterator(self: ?*const zstring_t) zstring_iterator_t {
 }
 
 inline fn zstringCast(zstring: *zstring_t) *String {
-    return @ptrCast(*String, @alignCast(8, zstring));
+    // return @as(*String, @ptrCast(@alignCast(8, zstring));
+    return @as(*String, @ptrCast(@alignCast(zstring)));
 }
 
 test "Basic Usage" {
 
     // Create your String
-    var myString = zstring_init();
+    const myString = zstring_init();
     defer zstring_deinit(myString);
 
     // Use functions provided
@@ -386,9 +387,10 @@ test "Basic Usage" {
 }
 
 test "String Tests" {
+    std.debug.print("testing String Tests\n", .{});
 
     // This is how we create the String
-    var myStr = zstring_init();
+    const myStr = zstring_init();
     defer zstring_deinit(myStr);
     var output_len: usize = undefined;
     var out_err: zstring_error_t = undefined;
@@ -420,7 +422,7 @@ test "String Tests" {
 
     // str & cmp
     assert(zstring_cmp(myStr, "A\u{5360}💯Hell") == 1);
-    var nstr_1 = try std.testing.allocator.dupeZ(u8, zstring_str(myStr, &output_len).?[0..output_len]);
+    const nstr_1 = try std.testing.allocator.dupeZ(u8, zstring_str(myStr, &output_len).?[0..output_len]);
     defer std.testing.allocator.free(nstr_1);
     assert(zstring_cmp(myStr, nstr_1) == 1);
 
@@ -458,9 +460,9 @@ test "String Tests" {
     assert(zstring_cmp(myStr, "💯Hello💯") == 1);
 
     // clone
-    var testStr = zstring_clone(myStr, &out_err);
+    const testStr = zstring_clone(myStr, &out_err);
     defer zstring_deinit(testStr);
-    var nstr_2 = try std.testing.allocator.dupeZ(u8, zstring_str(myStr, &output_len).?[0..output_len]);
+    const nstr_2 = try std.testing.allocator.dupeZ(u8, zstring_str(myStr, &output_len).?[0..output_len]);
     defer std.testing.allocator.free(nstr_2);
     assert(zstring_cmp(testStr, nstr_2) == 1);
 
@@ -485,7 +487,7 @@ test "String Tests" {
     assert(std.mem.eql(u8, zstring_split(myStr, "💯", 5, &output_len).?[0..output_len], "Hello"));
     assert(std.mem.eql(u8, zstring_split(myStr, "💯", 6, &output_len).?[0..output_len], ""));
 
-    var splitStr = zstring_init();
+    const splitStr = zstring_init();
     defer zstring_deinit(splitStr);
 
     _ = zstring_concat(splitStr, "variable='value'");
@@ -493,7 +495,7 @@ test "String Tests" {
     assert(std.mem.eql(u8, zstring_split(splitStr, "=", 1, &output_len).?[0..output_len], "'value'"));
 
     // splitToString
-    var newSplit = zstring_split_to_zstring(splitStr, "=", 0, &out_err);
+    const newSplit = zstring_split_to_zstring(splitStr, "=", 0, &out_err);
     assert(newSplit != null);
     defer zstring_deinit(newSplit);
 
@@ -506,7 +508,7 @@ test "String Tests" {
     assert(zstring_cmp(myStr, "💯hello💯💯hello💯💯hello💯") == 1);
 
     // substr
-    var subStr = zstring_substr(myStr, 0, 7, &out_err);
+    const subStr = zstring_substr(myStr, 0, 7, &out_err);
     defer zstring_deinit(subStr);
     assert(zstring_cmp(subStr, "💯hello💯") == 1);
 
@@ -535,11 +537,11 @@ test "String Tests" {
 }
 
 test "init with contents" {
-    var initial_contents = "String with initial contents!";
+    const initial_contents = "String with initial contents!";
     var output_len: usize = undefined;
     var out_err: zstring_error_t = undefined;
 
     // This is how we create the String with contents at the start
-    var myStr = zstring_init_with_contents(initial_contents, &out_err);
+    const myStr = zstring_init_with_contents(initial_contents, &out_err);
     assert(std.mem.eql(u8, zstring_str(myStr, &output_len).?[0..output_len], initial_contents));
 }

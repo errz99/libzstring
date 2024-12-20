@@ -3,10 +3,10 @@ const std = @import("std");
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-    
+
     const staticLib = b.addStaticLibrary(.{
         .name = "zstring",
-        .root_source_file = .{ .path = "src/zstring.zig" },
+        .root_source_file = .{ .cwd_relative = "src/zstring.zig" },
         .optimize = optimize,
         .target = target,
     });
@@ -15,7 +15,7 @@ pub fn build(b: *std.Build) void {
 
     const sharedLib = b.addSharedLibrary(.{
         .name = "zstring",
-        .root_source_file = .{ .path = "src/zstring.zig" },
+        .root_source_file = .{ .cwd_relative = "src/zstring.zig" },
         .optimize = optimize,
         .target = target,
     });
@@ -23,7 +23,7 @@ pub fn build(b: *std.Build) void {
     b.installArtifact(sharedLib);
 
     const main_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/zstring.zig" },
+        .root_source_file = .{ .cwd_relative = "src/zstring.zig" },
         .optimize = optimize,
     });
     main_tests.linkLibC();
